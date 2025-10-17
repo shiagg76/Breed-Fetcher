@@ -2,16 +2,6 @@ package dogapi;
 
 import java.util.*;
 
-/**
- * This BreedFetcher caches fetch request results to improve performance and
- * lessen the load on the underlying data source. An implementation of BreedFetcher
- * must be provided. The number of calls to the underlying fetcher are recorded.
- *
- * If a call to getSubBreeds produces a BreedNotFoundException, then it is NOT cached
- * in this implementation. The provided tests check for this behaviour.
- *
- * The cache maps the name of a breed to its list of sub breed names.
- */
 public class CachingBreedFetcher implements BreedFetcher {
     private final BreedFetcher fetcher;
     private final Map<String, List<String>> cache = new HashMap<>();
@@ -25,23 +15,27 @@ public class CachingBreedFetcher implements BreedFetcher {
     }
 
     @Override
-    public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
-        String key = (breed == null) ? "" : breed.trim().toLowerCase(Locale.ROOT);
-
-        if (cache.containsKey(key)) {
-            return new ArrayList<>(cache.get(key));
+    public List<String> getSubBreeds(String breed) {
+        if (cache.containsKey(breed)) {
+            return new ArrayList<>(cache.get(breed));
         }
+
+        callsMade++;
         try {
-            callsMade++;
             List<String> result = fetcher.getSubBreeds(breed);
-            cache.put(key, new ArrayList<>(result));
+            cache.put(breed, new ArrayList<>(result));
             return new ArrayList<>(result);
         } catch (BreedNotFoundException e) {
-            throw e;
+            rethrow(e);
+            return List.of();
         }
     }
 
     public int getCallsMade() {
         return callsMade;
+    }
+    // had to do A LOT of googling to try and fix this.
+    private static <E extends Throwable> void rethrow(Throwable t) throws E {
+        throw (E) t;
     }
 }
