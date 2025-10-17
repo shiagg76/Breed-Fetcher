@@ -15,21 +15,12 @@ public class Main {
         System.out.println(breed + " has " + result + " sub breeds");
     }
 
-    /**
-     * Return the number of sub breeds that the given dog breed has according to the
-     * provided fetcher.
-     * @param breed the name of the dog breed
-     * @param breedFetcher the breedFetcher to use
-     * @return the number of sub breeds. Zero should be returned if there are no sub breeds
-     * returned by the fetcher
-     */
     public static int getNumberOfSubBreeds(String breed, BreedFetcher breedFetcher) {
         try {
-            List<String> breedsFound = breedFetcher.getSubBreeds(breed);
-            return breedsFound.size();
-
-        } catch (BreedFetcher.BreedNotFoundException ex) {
-            return 0;
+            List<String> subs = breedFetcher.getSubBreeds(breed);
+            return (subs == null) ? 0 : subs.size();
+        } catch (BreedFetcher.BreedNotFoundException e) {
+            return -1;
         }
     }
 }
